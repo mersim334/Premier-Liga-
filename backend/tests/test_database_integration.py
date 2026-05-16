@@ -10,12 +10,32 @@ Primjer (PowerShell):
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import pytest
 
+
+def _has_database_config() -> bool:
+    """True ako je baza konfigurirana kroz env ili backend/.env (isto kao Settings)."""
+    if os.getenv("DATABASE_URL", "").strip():
+        return True
+    env_file = Path(__file__).resolve().parent.parent / ".env"
+    if not env_file.is_file():
+        return False
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        s = line.strip()
+        if not s or s.startswith("#"):
+            continue
+        key, _, val = s.partition("=")
+        key_u = key.strip().upper()
+        if key_u in ("DATABASE_URL", "DATABASEURL"):
+            return bool(val.strip().strip('"\''))
+    return False
+
+
 pytestmark = pytest.mark.skipif(
-    not os.getenv("DATABASE_URL", "").strip(),
-    reason="DATABASE_URL nije postavljen — preskačem integracijske testove",
+    not _has_database_config(),
+    reason="Nema DATABASE_URL (env ni backend/.env) — preskačem integracijske testove",
 )
 
 
