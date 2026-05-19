@@ -1,0 +1,10 @@
+# Lokalni secrets i okolina — ne ulaze u Git
+backend/.env
+.env
+.env.local
+
+# Python / alati
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
