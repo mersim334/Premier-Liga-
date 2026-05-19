@@ -1,0 +1,14 @@
+import { TeamsSection } from '../components/LigaSections'
+import { useLigaData } from '../context/LigaDataContext'
+
+export function TimoviPage() {
+  const { loading, error, teams } = useLigaData()
+
+  if (!loading && !error && teams.length === 0) {
+    return (
+      <p className="muted">Nema timova — provjeri seed / bazu na backendu.</p>
+    )
+  }
+
+  return <TeamsSection />
+}
