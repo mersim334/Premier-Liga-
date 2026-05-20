@@ -18,5 +18,11 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // Strogo pravilo iz react-hooks v7 — česti legitimni obrasci (reset stanja pri promjeni ključa).
+      'react-hooks/set-state-in-effect': 'off',
+      // Kontekst + sekcije eksportuju i pomoćne stvari potrebne rutama.
+      'react-refresh/only-export-components': 'off',
+    },
   },
 ])

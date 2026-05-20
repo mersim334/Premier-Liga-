@@ -6,6 +6,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.domain.football import (
+    MAX_MINUTE_ADDED,
     REGULATION_MINUTES,
     assert_match_scores_valid,
     assert_regulation_event_minute,
@@ -84,6 +85,17 @@ class PlayerOut(BaseModel):
     updated_at: datetime
 
 
+MatchEventType = Literal[
+    "goal",
+    "own_goal",
+    "yellow_card",
+    "red_card",
+    "substitution",
+    "penalty_scored",
+    "penalty_missed",
+]
+
+
 class MatchEventOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -103,6 +115,72 @@ class MatchEventOut(BaseModel):
     def _minute_in_regulation(self) -> MatchEventOut:
         assert_regulation_event_minute(self.minute, self.minute_added)
         return self
+
+
+class MatchEventCreate(BaseModel):
+    """Unos događaja — ista polja kao u tablici match_events (bez id/vremena)."""
+
+    match_id: int = Field(ge=1)
+    team_id: int = Field(ge=1)
+    minute: int = Field(ge=1, le=REGULATION_MINUTES)
+    minute_added: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=MAX_MINUTE_ADDED,
+    )
+    event_type: MatchEventType
+    player_id: Optional[int] = Field(default=None, ge=1)
+    related_player_id: Optional[int] = Field(default=None, ge=1)
+    notes: Optional[str] = Field(default=None, max_length=4000)
+
+    @model_validator(mode="after")
+    def _minute_regulation(self) -> MatchEventCreate:
+        assert_regulation_event_minute(self.minute, self.minute_added)
+        return self
+
+    @model_validator(mode="after")
+    def _players_for_event_type(self) -> MatchEventCreate:
+        if self.event_type == "substitution":
+            if self.player_id is None or self.related_player_id is None:
+                raise ValueError(
+                    "Zamjena zahtijeva igrača koji izlazi i igrača koji ulazi."
+                )
+            if self.player_id == self.related_player_id:
+                raise ValueError("Izlazeći i ulazeći igrač moraju biti različiti.")
+        else:
+            need = {
+                "goal",
+                "own_goal",
+                "yellow_card",
+                "red_card",
+                "penalty_scored",
+                "penalty_missed",
+            }
+            if self.event_type in need and self.player_id is None:
+                raise ValueError(
+                    f"Događaj tipa «{self.event_type}» zahtijeva primarnog igrača."
+                )
+            if self.related_player_id is not None:
+                raise ValueError(
+                    "Polje related_player_id smije biti postavljeno samo za zamjenu."
+                )
+        return self
+
+
+class MatchEventUpdate(BaseModel):
+    """Djelomična izmjena događaja (PATCH)."""
+
+    team_id: Optional[int] = Field(default=None, ge=1)
+    minute: Optional[int] = Field(default=None, ge=1, le=REGULATION_MINUTES)
+    minute_added: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=MAX_MINUTE_ADDED,
+    )
+    event_type: Optional[MatchEventType] = None
+    player_id: Optional[int] = Field(default=None, ge=1)
+    related_player_id: Optional[int] = None
+    notes: Optional[str] = Field(default=None, max_length=4000)
 
 
 MatchRefereeRole = Literal[

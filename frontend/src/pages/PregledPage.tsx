@@ -1,9 +1,7 @@
 import {
-  MatchEventsSection,
   MatchesSection,
-  PlayersSection,
+  RasporedPreviewSection,
   StandingsSection,
-  TeamsSection,
 } from '../components/LigaSections'
 import { useLigaData } from '../context/LigaDataContext'
 
@@ -18,11 +16,9 @@ export function PregledPage() {
 
   return (
     <>
-      <StandingsSection />
-      <TeamsSection />
+      <RasporedPreviewSection />
       <MatchesSection />
-      <PlayersSection />
-      <MatchEventsSection />
+      <StandingsSection />
     </>
   )
 }

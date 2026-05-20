@@ -1,6 +1,8 @@
 /** Pravilnik u ovom demu — usklađeno sa backend `GET /rules`. */
 
 export const REGULATION_MINUTES = 90
+/** Nadoknada u poluvremenu (prikaz + API) — max minute_added u bazi. */
+export const MAX_MINUTE_ADDED = 15
 /** Trajanje jednog poluvremena (Law 7). */
 export const HALF_DURATION_MINUTES = 45
 /** @deprecated koristi HALF_DURATION_MINUTES (isto značenje). */

@@ -211,62 +211,6 @@
   margin-bottom: 12px !important;
 }
 
-/* Dev / API sakriveno kao details */
-.dev-accordion {
-  margin-top: 10px;
-  border: 1px solid var(--r-border);
-  border-radius: 6px;
-  background: var(--r-panel);
-  overflow: hidden;
-}
-
-.dev-accordion summary {
-  list-style: none;
-  cursor: pointer;
-  padding: 8px 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--r-text-muted);
-  user-select: none;
-}
-
-.dev-accordion summary::-webkit-details-marker {
-  display: none;
-}
-
-.dev-accordion summary::after {
-  content: ' ▸';
-  margin-left: 6px;
-  opacity: 0.7;
-}
-
-.dev-accordion[open] summary::after {
-  content: ' ▾';
-}
-
-.dev-accordion-inner {
-  padding: 10px 12px 12px;
-  border-top: 1px solid var(--r-border);
-  font-size: 0.8125rem;
-  color: var(--r-text-muted);
-}
-
-.dev-accordion-inner code {
-  display: block;
-  margin-top: 8px;
-  word-break: break-all;
-}
-
-.status-inline {
-  margin-top: 8px;
-}
-
-.status-inline code {
-  display: inline;
-}
-
 /* --------- Sekcije (kartica) --------- */
 .section-card {
   margin-top: 20px;
@@ -354,6 +298,10 @@ table.data-table {
 
 .data-table tbody tr:hover {
   background: var(--r-accent-dim);
+}
+
+.data-table tbody tr.data-table-row--clickable {
+  cursor: pointer;
 }
 
 .data-table tbody tr:last-child {
@@ -447,6 +395,120 @@ table.data-table {
   font-weight: 700;
 }
 
+/* Rezultati — kartica po utakmici (Flashscore-stil) */
+.match-results-board {
+  display: flex;
+  flex-direction: column;
+}
+
+.match-result-row {
+  display: grid;
+  grid-template-columns: 5.75rem minmax(0, 1fr);
+  gap: 10px 16px;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--r-border);
+  background: var(--r-panel);
+}
+
+a.match-result-row--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+a.match-result-row--link:hover {
+  background: var(--r-panel-hover);
+}
+
+a.match-result-row--link:focus-visible {
+  outline: 2px solid var(--r-border);
+  outline-offset: -2px;
+}
+
+.match-result-time-col {
+  font-size: 0.78rem;
+  color: var(--r-text-muted);
+  line-height: 1.35;
+  align-self: center;
+}
+
+.match-result-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.match-result-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.match-result-badge {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: var(--r-head);
+  border: 1px solid var(--r-border);
+  color: var(--r-text-muted);
+}
+
+a.match-result-team-name,
+span.match-result-team-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-result-goals {
+  flex-shrink: 0;
+  min-width: 1.75rem;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.match-result-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  padding-left: 36px;
+}
+
+.match-result-refs-hint {
+  font-size: 0.7rem;
+  cursor: help;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.results-round-header {
+  padding: 10px 14px 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--r-text-muted);
+  background: var(--r-head);
+  border-bottom: 1px solid var(--r-border);
+}
+
 .data-table tbody td.muted {
   color: var(--r-text-muted);
 }
@@ -480,7 +542,8 @@ table.data-table {
 .standings-block,
 .events-block,
 .compare-block,
-.raspored-page {
+.raspored-page,
+.raspored-preview-block {
   margin-top: 0;
 }
 
@@ -580,6 +643,13 @@ table.data-table {
   min-width: 11rem;
 }
 
+select.schedule-round-select {
+  margin-top: 2px;
+  min-width: 11rem;
+  max-width: 16rem;
+  width: 100%;
+}
+
 .schedule-date-human {
   font-size: 0.8rem;
   padding-bottom: 4px;
@@ -612,6 +682,30 @@ table.data-table {
 
 .schedule-edit-table {
   margin-bottom: 12px;
+}
+
+.schedule-edit-board {
+  margin-bottom: 12px;
+}
+
+.schedule-edit-match-row .match-result-time-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.schedule-edit-match-no {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+select.schedule-team-select--flash {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+  width: auto;
 }
 
 .schedule-team-select {
@@ -826,4 +920,513 @@ table.data-table {
 .matches-block > .section-card,
 .compare-block > .section-card {
   margin-top: 20px;
+}
+
+/* Progresivni prikaz kola (Prikaži još / manje) */
+.rounds-load-more {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 1rem 0 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--r-border);
+}
+
+.rounds-load-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--r-text);
+  background: var(--r-panel);
+  border: 1px solid var(--r-border);
+  border-radius: 6px;
+}
+
+.rounds-load-more-btn--less {
+  background: var(--r-head);
+}
+
+.rounds-load-more-chevron {
+  font-size: 0.75rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.rounds-load-more-detail {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* Forma događaja na meču */
+.match-events-form-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.match-event-form {
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--r-border);
+}
+
+.match-event-form-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.match-event-save-hint {
+  margin: 0 0 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.match-event-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.match-event-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.match-event-field--wide {
+  grid-column: 1 / -1;
+}
+
+.match-event-field input,
+.match-event-field select {
+  font-weight: 500;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  color: var(--r-text);
+  background: var(--r-head);
+  border: 1px solid var(--r-border);
+  border-radius: 4px;
+}
+
+.match-event-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.match-event-row-actions {
+  white-space: nowrap;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.status-chip--draft {
+  border-style: dashed;
+  opacity: 0.95;
+}
+
+.data-table tr.match-event-row--pending td:first-child {
+  box-shadow: inset 3px 0 0 0 var(--r-accent, #4a9eff);
+}
+
+.match-event-draft-label {
+  font-size: 0.72rem;
+}
+
+.linkish-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--r-accent, #4a9eff);
+  text-decoration: underline;
+}
+
+.linkish-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.linkish-btn--danger {
+  color: #c44;
+}
+
+/* Hronologija događaja (detalj utakmice — pregled) */
+.match-timeline {
+  margin-bottom: 1.5rem;
+}
+
+.match-timeline--empty {
+  padding: 8px 0 16px;
+}
+
+.match-timeline-half {
+  margin-bottom: 8px;
+}
+
+.match-timeline-half-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--r-head);
+  border: 1px solid var(--r-border);
+  border-radius: 4px 4px 0 0;
+}
+
+.match-timeline-half + .match-timeline-half {
+  margin-top: 12px;
+}
+
+.match-timeline-half-title {
+  font-weight: 800;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--r-text);
+}
+
+.match-timeline-half-score {
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.match-timeline-half-empty {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  border: 1px solid var(--r-border);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  background: var(--r-panel);
+}
+
+.match-timeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 14px 12px 18px;
+  border: 1px solid var(--r-border);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  background: var(--r-panel);
+}
+
+.match-timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  min-height: 40px;
+}
+
+.match-timeline-row:last-child {
+  margin-bottom: 0;
+}
+
+.match-timeline-row--home {
+  justify-content: flex-start;
+  flex-direction: row;
+}
+
+.match-timeline-row--away {
+  justify-content: flex-end;
+  flex-direction: row;
+}
+
+.match-timeline-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  max-width: min(100%, 280px);
+}
+
+.match-timeline-row--away .match-timeline-main {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.match-timeline-min {
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--r-text-muted);
+  flex-shrink: 0;
+  min-width: 2.5rem;
+}
+
+.match-timeline-row--home .match-timeline-min {
+  text-align: left;
+}
+
+.match-timeline-row--away .match-timeline-min {
+  text-align: right;
+}
+
+.match-timeline-icon-wrap {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--r-head);
+  border: 1px solid var(--r-border);
+}
+
+.match-timeline-glyph {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.match-timeline-glyph--ball {
+  font-size: 1.05rem;
+}
+
+.match-timeline-glyph--og {
+  opacity: 0.75;
+  filter: grayscale(0.2);
+}
+
+.match-timeline-glyph--miss {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--r-text-muted);
+}
+
+.match-timeline-glyph--sub {
+  font-size: 1.1rem;
+  color: #2a8f2a;
+}
+
+.match-timeline-card {
+  display: block;
+  width: 12px;
+  height: 18px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.match-timeline-card--yellow {
+  background: linear-gradient(180deg, #ffe066 0%, #f5d10a 100%);
+}
+
+.match-timeline-card--red {
+  background: linear-gradient(180deg, #e85555 0%, #b00020 100%);
+}
+
+.match-timeline-player {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.match-timeline-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: inherit;
+}
+
+.match-timeline-row--away .match-timeline-text {
+  align-items: flex-end;
+}
+
+.match-timeline-sub-in {
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+
+.match-timeline-sub-out {
+  font-size: 0.78rem;
+}
+
+.match-timeline-score-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border-radius: 4px;
+  background: var(--r-head);
+  border: 1px solid var(--r-border);
+  width: fit-content;
+}
+
+/* Stranica detalja utakmice */
+.match-detail-page {
+  max-width: 900px;
+}
+
+.match-detail-breadcrumb {
+  font-size: 0.8rem;
+  margin-bottom: 12px;
+}
+
+.match-detail-breadcrumb a {
+  color: inherit;
+}
+
+.match-detail-card {
+  overflow: hidden;
+}
+
+.match-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 16px 20px;
+  align-items: center;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--r-border);
+  background: var(--r-head);
+}
+
+.match-detail-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  min-width: 0;
+}
+
+.match-detail-team--home {
+  justify-self: start;
+}
+
+.match-detail-team--away {
+  justify-self: end;
+}
+
+.match-detail-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  font-weight: 800;
+  background: var(--r-panel);
+  border: 1px solid var(--r-border);
+  color: var(--r-text-muted);
+  text-decoration: none;
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+
+.match-detail-badge:hover {
+  background: var(--r-panel-hover);
+  transform: scale(1.02);
+}
+
+.match-detail-club-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.match-detail-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.match-detail-season {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.match-detail-round {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.match-detail-when {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.match-detail-score {
+  margin: 4px 0 0;
+  font-size: 2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.match-detail-score-sep {
+  opacity: 0.45;
+  font-weight: 600;
+}
+
+.match-detail-notes {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.match-detail-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--r-border);
+  background: var(--r-panel);
+}
+
+.match-detail-tab {
+  flex: 1;
+  max-width: 200px;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--r-text-muted);
+  cursor: pointer;
+}
+
+.match-detail-tab:hover {
+  color: var(--r-text);
+  background: var(--r-head);
+}
+
+.match-detail-tab--active {
+  color: var(--r-text);
+  border-bottom-color: #c33;
+}
+
+.match-detail-tab-panel {
+  padding-top: 16px;
+}
+
+@media (max-width: 640px) {
+  .match-detail-hero {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .match-detail-team--home,
+  .match-detail-team--away {
+    justify-self: center;
+  }
 }

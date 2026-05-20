@@ -32,6 +32,11 @@ function sortSeasonsNewestFirst(list: SeasonRow[]): SeasonRow[] {
   return [...list].sort((a, b) => b.id - a.id)
 }
 
+/** Opcije za ponovno učitavanje sezone (npr. zadrži odabrani meč). */
+export type LoadSeasonBundleOptions = {
+  preserveSelectedMatchId?: number | null
+}
+
 export type LigaDataContextValue = {
   health: string | null
   seasons: SeasonRow[]
@@ -52,6 +57,10 @@ export type LigaDataContextValue = {
   selectedMatchLabel: (row: MatchRow) => string
   onSeasonChange: (e: ChangeEvent<HTMLSelectElement>) => Promise<void>
   onMatchChange: (e: ChangeEvent<HTMLSelectElement>) => Promise<void>
+  /** Odaberi meč po ID (npr. stranica detalja) i učitaj događaje. */
+  selectMatchById: (matchId: number) => Promise<void>
+  /** Ponovo učitaj događaje za trenutno odabrani meč. */
+  refreshMatchEvents: () => Promise<void>
   /** Ponovo učitaj mečeve, tablicu i prateće podatke za trenutno odabranu sezonu. */
   refreshSeasonData: () => Promise<void>
 }
@@ -94,39 +103,47 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
     return m
   }, [players])
 
-  const loadSeasonBundle = useCallback(async (seasonId: number) => {
-    setDetailLoading(true)
-    try {
-      const [m, p, st, seasonList] = await Promise.all([
-        getMatches(seasonId),
-        getPlayers({ season_id: seasonId }),
-        getStandings(seasonId),
-        getSeasons(),
-      ])
-      setMatches(sortMatchesForDisplay(m))
-      setPlayers(p)
-      setStandings(st)
-      setSeasons(sortSeasonsNewestFirst(seasonList))
-
+  const loadSeasonBundle = useCallback(
+    async (seasonId: number, options?: LoadSeasonBundleOptions) => {
+      setDetailLoading(true)
       try {
-        const refs = await getMatchReferees(seasonId)
-        setMatchRefAssignments(refs)
-      } catch {
-        setMatchRefAssignments([])
-      }
+        const [m, p, st, seasonList] = await Promise.all([
+          getMatches(seasonId),
+          getPlayers({ season_id: seasonId }),
+          getStandings(seasonId),
+          getSeasons(),
+        ])
+        const sortedM = sortMatchesForDisplay(m)
+        setMatches(sortedM)
+        setPlayers(p)
+        setStandings(st)
+        setSeasons(sortSeasonsNewestFirst(seasonList))
 
-      const firstMid = m[0]?.id ?? null
-      setSelectedMatchId(firstMid)
-      if (firstMid != null) {
-        const ev = await getMatchEvents(firstMid)
-        setMatchEvents(ev)
-      } else {
-        setMatchEvents([])
+        try {
+          const refs = await getMatchReferees(seasonId)
+          setMatchRefAssignments(refs)
+        } catch {
+          setMatchRefAssignments([])
+        }
+
+        const preserve = options?.preserveSelectedMatchId
+        const midToUse =
+          preserve != null && sortedM.some((row) => row.id === preserve)
+            ? preserve
+            : (sortedM[0]?.id ?? null)
+        setSelectedMatchId(midToUse)
+        if (midToUse != null) {
+          const ev = await getMatchEvents(midToUse)
+          setMatchEvents(ev)
+        } else {
+          setMatchEvents([])
+        }
+      } finally {
+        setDetailLoading(false)
       }
-    } finally {
-      setDetailLoading(false)
-    }
-  }, [])
+    },
+    [],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -228,30 +245,53 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
     [loadSeasonBundle],
   )
 
+  const selectMatchById = useCallback(async (matchId: number) => {
+    if (Number.isNaN(matchId) || matchId < 1) return
+    setSelectedMatchId(matchId)
+    setDetailLoading(true)
+    try {
+      const ev = await getMatchEvents(matchId)
+      setMatchEvents(ev)
+      setError(null)
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : 'Neuspjelo učitavanje događaja'
+      setError(msg)
+    } finally {
+      setDetailLoading(false)
+    }
+  }, [])
+
   const onMatchChange = useCallback(
     async (e: ChangeEvent<HTMLSelectElement>) => {
       const id = Number(e.target.value)
       if (Number.isNaN(id)) return
-      setSelectedMatchId(id)
-      setDetailLoading(true)
-      try {
-        const ev = await getMatchEvents(id)
-        setMatchEvents(ev)
-      } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : 'Neuspjelo učitavanje događaja'
-        setError(msg)
-      } finally {
-        setDetailLoading(false)
-      }
+      await selectMatchById(id)
     },
-    [],
+    [selectMatchById],
   )
+
+  const refreshMatchEvents = useCallback(async () => {
+    if (selectedMatchId == null) return
+    setDetailLoading(true)
+    try {
+      const ev = await getMatchEvents(selectedMatchId)
+      setMatchEvents(ev)
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : 'Neuspjelo učitavanje događaja'
+      setError(msg)
+    } finally {
+      setDetailLoading(false)
+    }
+  }, [selectedMatchId])
 
   const refreshSeasonData = useCallback(async () => {
     if (selectedSeasonId == null) return
     try {
-      await loadSeasonBundle(selectedSeasonId)
+      await loadSeasonBundle(selectedSeasonId, {
+        preserveSelectedMatchId: selectedMatchId,
+      })
       setError(null)
     } catch (err) {
       const msg =
@@ -261,7 +301,7 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
       setError(msg)
       throw err
     }
-  }, [loadSeasonBundle, selectedSeasonId])
+  }, [loadSeasonBundle, selectedSeasonId, selectedMatchId])
 
   const selectedMatchLabel = useCallback(
     (row: MatchRow) =>
@@ -289,6 +329,8 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
       selectedMatchLabel,
       onSeasonChange,
       onMatchChange,
+      selectMatchById,
+      refreshMatchEvents,
       refreshSeasonData,
     }),
     [
@@ -310,6 +352,8 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
       selectedMatchLabel,
       onSeasonChange,
       onMatchChange,
+      selectMatchById,
+      refreshMatchEvents,
       refreshSeasonData,
     ],
   )

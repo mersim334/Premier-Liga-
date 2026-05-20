@@ -11,6 +11,7 @@ import { RasporedPage } from './pages/RasporedPage'
 import { TablicaPage } from './pages/TablicaPage'
 import { TimDetaljPage } from './pages/TimDetaljPage'
 import { TimoviPage } from './pages/TimoviPage'
+import { UtakmicaDetaljPage } from './pages/UtakmicaDetaljPage'
 import { UtakmicePage } from './pages/UtakmicePage'
 import { UporediPage } from './pages/UporediPage'
 
@@ -28,7 +29,12 @@ export default function App() {
             <Route path="raspored" element={<RasporedPage />} />
             <Route path="timovi" element={<TimoviPage />} />
             <Route path="timovi/:teamId" element={<TimDetaljPage />} />
-            <Route path="utakmice" element={<UtakmicePage />} />
+            <Route path="rezultati" element={<UtakmicePage />} />
+            <Route path="utakmice/:matchId" element={<UtakmicaDetaljPage />} />
+            <Route
+              path="utakmice"
+              element={<Navigate to="/rezultati" replace />}
+            />
             <Route path="uporedi" element={<UporediPage />} />
             <Route path="igraci" element={<IgraciPage />} />
             <Route path="igraci/:playerId" element={<IgracDetaljPage />} />
