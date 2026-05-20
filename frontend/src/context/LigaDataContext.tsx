@@ -12,15 +12,25 @@ import {
 import { getHealth } from '../api/health'
 import type { MatchEventRow } from '../api/match-events'
 import { getMatchEvents } from '../api/match-events'
+import type { MatchRefereeRow } from '../api/match-referees'
+import { getMatchReferees } from '../api/match-referees'
 import type { MatchRow } from '../api/matches'
 import { getMatches } from '../api/matches'
 import type { PlayerRow } from '../api/players'
 import { getPlayers } from '../api/players'
 import type { SeasonRow } from '../api/seasons'
 import { getSeasons } from '../api/seasons'
+import type { StandingsRow } from '../api/standings'
+import { getStandings } from '../api/standings'
 import type { TeamRow } from '../api/teams'
 import { getTeams } from '../api/teams'
 import { formatDate } from '../utils/formatDate'
+import { sortMatchesForDisplay } from '../utils/sortMatches'
+
+/** Novija sezona (veći id) prva — ista logika kao GET /seasons. */
+function sortSeasonsNewestFirst(list: SeasonRow[]): SeasonRow[] {
+  return [...list].sort((a, b) => b.id - a.id)
+}
 
 export type LigaDataContextValue = {
   health: string | null
@@ -28,7 +38,10 @@ export type LigaDataContextValue = {
   teams: TeamRow[]
   matches: MatchRow[]
   players: PlayerRow[]
+  standings: StandingsRow[]
   matchEvents: MatchEventRow[]
+  /** Dodjela sudija za učitanu sezonu; prazno ako nema podataka ili staru bazu. */
+  matchRefAssignments: MatchRefereeRow[]
   selectedSeasonId: number | null
   selectedMatchId: number | null
   loading: boolean
@@ -39,6 +52,8 @@ export type LigaDataContextValue = {
   selectedMatchLabel: (row: MatchRow) => string
   onSeasonChange: (e: ChangeEvent<HTMLSelectElement>) => Promise<void>
   onMatchChange: (e: ChangeEvent<HTMLSelectElement>) => Promise<void>
+  /** Ponovo učitaj mečeve, tablicu i prateće podatke za trenutno odabranu sezonu. */
+  refreshSeasonData: () => Promise<void>
 }
 
 const LigaDataContext = createContext<LigaDataContextValue | null>(null)
@@ -49,7 +64,11 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
   const [teams, setTeams] = useState<TeamRow[]>([])
   const [matches, setMatches] = useState<MatchRow[]>([])
   const [players, setPlayers] = useState<PlayerRow[]>([])
+  const [standings, setStandings] = useState<StandingsRow[]>([])
   const [matchEvents, setMatchEvents] = useState<MatchEventRow[]>([])
+  const [matchRefAssignments, setMatchRefAssignments] = useState<
+    MatchRefereeRow[]
+  >([])
 
   const [selectedSeasonId, setSelectedSeasonId] = useState<number | null>(null)
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null)
@@ -78,12 +97,23 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
   const loadSeasonBundle = useCallback(async (seasonId: number) => {
     setDetailLoading(true)
     try {
-      const [m, p] = await Promise.all([
+      const [m, p, st, seasonList] = await Promise.all([
         getMatches(seasonId),
         getPlayers({ season_id: seasonId }),
+        getStandings(seasonId),
+        getSeasons(),
       ])
-      setMatches(m)
+      setMatches(sortMatchesForDisplay(m))
       setPlayers(p)
+      setStandings(st)
+      setSeasons(sortSeasonsNewestFirst(seasonList))
+
+      try {
+        const refs = await getMatchReferees(seasonId)
+        setMatchRefAssignments(refs)
+      } catch {
+        setMatchRefAssignments([])
+      }
 
       const firstMid = m[0]?.id ?? null
       setSelectedMatchId(firstMid)
@@ -111,7 +141,7 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
         ])
         if (cancelled) return
         setHealth(h.status)
-        setSeasons(seasonList)
+        setSeasons(sortSeasonsNewestFirst(seasonList))
         setTeams(teamList)
 
         const defaultSeasonId =
@@ -121,13 +151,21 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
         if (defaultSeasonId != null) {
           setDetailLoading(true)
           try {
-            const [m, p] = await Promise.all([
+            const [m, p, st] = await Promise.all([
               getMatches(defaultSeasonId),
               getPlayers({ season_id: defaultSeasonId }),
+              getStandings(defaultSeasonId),
             ])
             if (cancelled) return
-            setMatches(m)
+            setMatches(sortMatchesForDisplay(m))
             setPlayers(p)
+            setStandings(st)
+            try {
+              const refs = await getMatchReferees(defaultSeasonId)
+              if (!cancelled) setMatchRefAssignments(refs)
+            } catch {
+              if (!cancelled) setMatchRefAssignments([])
+            }
             const firstMid = m[0]?.id ?? null
             setSelectedMatchId(firstMid)
             if (firstMid != null) {
@@ -142,7 +180,9 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
         } else {
           setMatches([])
           setPlayers([])
+          setStandings([])
           setMatchEvents([])
+          setMatchRefAssignments([])
         }
       } catch (e) {
         if (cancelled) return
@@ -154,7 +194,9 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
         setTeams([])
         setMatches([])
         setPlayers([])
+        setStandings([])
         setMatchEvents([])
+        setMatchRefAssignments([])
         setSelectedSeasonId(null)
         setSelectedMatchId(null)
       } finally {
@@ -206,6 +248,21 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
     [],
   )
 
+  const refreshSeasonData = useCallback(async () => {
+    if (selectedSeasonId == null) return
+    try {
+      await loadSeasonBundle(selectedSeasonId)
+      setError(null)
+    } catch (err) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : 'Neuspjelo osvježavanje podataka sezone'
+      setError(msg)
+      throw err
+    }
+  }, [loadSeasonBundle, selectedSeasonId])
+
   const selectedMatchLabel = useCallback(
     (row: MatchRow) =>
       `${formatDate(row.match_date)} · ${resolveTeam(row.home_team_id)} — ${resolveTeam(row.away_team_id)}`,
@@ -219,7 +276,9 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
       teams,
       matches,
       players,
+      standings,
       matchEvents,
+      matchRefAssignments,
       selectedSeasonId,
       selectedMatchId,
       loading,
@@ -230,6 +289,7 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
       selectedMatchLabel,
       onSeasonChange,
       onMatchChange,
+      refreshSeasonData,
     }),
     [
       health,
@@ -237,7 +297,9 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
       teams,
       matches,
       players,
+      standings,
       matchEvents,
+      matchRefAssignments,
       selectedSeasonId,
       selectedMatchId,
       loading,
@@ -248,6 +310,7 @@ export function LigaDataProvider({ children }: { children: ReactNode }) {
       selectedMatchLabel,
       onSeasonChange,
       onMatchChange,
+      refreshSeasonData,
     ],
   )
 

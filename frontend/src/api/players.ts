@@ -21,3 +21,7 @@ export function getPlayers(params?: {
   const qs = q.toString()
   return apiGet<PlayerRow[]>(qs ? `/players?${qs}` : '/players')
 }
+
+export function getPlayer(playerId: number): Promise<PlayerRow> {
+  return apiGet<PlayerRow>(`/players/${playerId}`)
+}

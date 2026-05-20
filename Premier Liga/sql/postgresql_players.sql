@@ -1,4 +1,4 @@
--- PostgreSQL: tablica players — minimalna šema (Premijer liga BiH — učenje)
+-- PostgreSQL: tablica players — demo / učenje
 -- Pokretanje: nakon postgresql_seasons.sql i postgresql_teams.sql (season_id FK).
 -- Preporučeni red cijelog paketa: seasons → teams → matches → players → match_events.
 

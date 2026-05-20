@@ -26,7 +26,7 @@ def fetch_seasons() -> List[Any]:
         """
         SELECT id, name, start_date, end_date, is_current, created_at, updated_at
         FROM seasons
-        ORDER BY start_date DESC NULLS LAST, id ASC
+        ORDER BY id DESC
         """
     )
 
@@ -74,7 +74,7 @@ def fetch_matches(season_id: Optional[int] = None) -> List[Any]:
     if season_id is not None:
         sql += " WHERE season_id = %s"
         params.append(season_id)
-    sql += " ORDER BY match_date DESC NULLS LAST, round_no DESC, id ASC"
+    sql += " ORDER BY round_no ASC NULLS LAST, match_date ASC NULLS LAST, id ASC"
     return _fetch_all(sql, tuple(params))
 
 
@@ -150,9 +150,52 @@ def fetch_match_event(event_id: int) -> Any:
     )
 
 
+def fetch_referees() -> List[Any]:
+    return _fetch_all(
+        """
+        SELECT id, full_name, created_at, updated_at
+        FROM referees
+        ORDER BY id ASC
+        """
+    )
+
+
+def fetch_match_referee_assignments_for_season(season_id: int) -> List[Any]:
+    return _fetch_all(
+        """
+        SELECT
+            mr.match_id,
+            mr.role,
+            mr.referee_id,
+            r.full_name AS referee_full_name
+        FROM match_referees AS mr
+        INNER JOIN matches AS m ON m.id = mr.match_id
+        INNER JOIN referees AS r ON r.id = mr.referee_id
+        WHERE m.season_id = %s
+        ORDER BY
+            mr.match_id,
+            CASE mr.role
+                WHEN 'main' THEN 1
+                WHEN 'assistant_1' THEN 2
+                WHEN 'assistant_2' THEN 3
+                WHEN 'fourth_official' THEN 4
+            END
+        """,
+        (season_id,),
+    )
+
+
 def tables_exist_expected() -> dict[str, bool]:
     """Provjera da sve tablice iz šeme postoje u public šemi."""
-    names = ["seasons", "teams", "matches", "players", "match_events"]
+    names = [
+        "seasons",
+        "teams",
+        "matches",
+        "players",
+        "match_events",
+        "referees",
+        "match_referees",
+    ]
     sql = """
         SELECT EXISTS (
             SELECT FROM information_schema.tables

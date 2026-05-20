@@ -14,6 +14,8 @@ export type MatchRow = {
   notes: string | null
   created_at: string
   updated_at: string
+  /** Regularno trajanje utakmice u minutama (pravilnik: 90). */
+  regulation_minutes?: number
 }
 
 export function getMatches(seasonId: number): Promise<MatchRow[]> {

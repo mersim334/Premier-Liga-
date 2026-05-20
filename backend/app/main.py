@@ -1,10 +1,38 @@
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import events, matches, players, seasons, teams
+from app.routers import (
+    events,
+    match_referees,
+    matches,
+    players,
+    referees,
+    rules,
+    schedule,
+    seasons,
+    standings,
+    teams,
+)
 
-app = FastAPI(title="BiH Premier Liga API", version="0.1.0")
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    s = get_settings()
+    label = "mock_data.py" if not s.database_configured() else "PostgreSQL"
+    print(f"[premier-api] Izvor podataka: {label}")
+    yield
+
+
+app = FastAPI(
+    title="Premier liga — demo API",
+    version="0.1.0",
+    lifespan=_lifespan,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,11 +45,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(rules.router, prefix="/rules", tags=["rules"])
 app.include_router(seasons.router, prefix="/seasons", tags=["seasons"])
 app.include_router(teams.router, prefix="/teams", tags=["teams"])
 app.include_router(matches.router, prefix="/matches", tags=["matches"])
 app.include_router(players.router, prefix="/players", tags=["players"])
 app.include_router(events.router, prefix="/match-events", tags=["match-events"])
+app.include_router(referees.router, prefix="/referees", tags=["referees"])
+app.include_router(
+    match_referees.router, prefix="/match-referees", tags=["match-referees"]
+)
+app.include_router(standings.router, prefix="/standings", tags=["standings"])
+app.include_router(schedule.router, prefix="/schedule", tags=["schedule"])
 
 
 @app.get("/health")

@@ -20,7 +20,8 @@ def _rows(rows: List[Any]) -> List[SeasonOut]:
 def list_seasons():
     settings = get_settings()
     if not settings.database_configured():
-        return [SeasonOut.model_validate(row) for row in mock_data.SEASONS]
+        rows = sorted(mock_data.SEASONS, key=lambda r: r["id"], reverse=True)
+        return [SeasonOut.model_validate(row) for row in rows]
     return _rows(repos_read.fetch_seasons())
 
 

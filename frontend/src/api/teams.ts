@@ -13,3 +13,7 @@ export type TeamRow = {
 export function getTeams(): Promise<TeamRow[]> {
   return apiGet<TeamRow[]>('/teams')
 }
+
+export function getTeam(teamId: number): Promise<TeamRow> {
+  return apiGet<TeamRow>(`/teams/${teamId}`)
+}

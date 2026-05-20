@@ -1,5 +1,5 @@
 -- =============================================================================
--- seasons — BiH Premier Liga (učenje, lokalna baza)
+-- seasons — demo liga (fiktivni podaci, učenje, lokalna SQLite baza)
 -- Cilj: SQLite-friendly; za PostgreSQL vidi komentare na dnu.
 -- =============================================================================
 
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS seasons (
     name TEXT NOT NULL,
 
     -- Naziv takmičenja (isti ligaski kontekst za sve redove ili razdvajanje po ligama)
-    competition TEXT NOT NULL DEFAULT 'Premijer liga BiH',
+    competition TEXT NOT NULL DEFAULT 'Demo liga (fiktivno)',
 
     -- Jedinstven ključ za URL/filter, npr. "2025-26"
     slug TEXT NOT NULL UNIQUE,
@@ -47,8 +47,8 @@ CREATE INDEX IF NOT EXISTS idx_seasons_starts_on ON seasons (starts_on DESC);
 /*
 INSERT INTO seasons (name, competition, slug, starts_on, ends_on, is_current, notes)
 VALUES
-    ('2024/25', 'Premijer liga BiH', '2024-25', '2024-08-02', '2025-05-31', 0, NULL),
-    ('2025/26', 'Premijer liga BiH', '2025-26', '2025-08-01', NULL,           1, NULL);
+    ('2024/25', 'Demo liga (fiktivno)', '2024-25', '2024-08-02', '2025-05-31', 0, NULL),
+    ('2025/26', 'Demo liga (fiktivno)', '2025-26', '2025-08-01', NULL,           1, NULL);
 */
 
 -- =============================================================================
