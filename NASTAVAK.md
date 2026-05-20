@@ -23,28 +23,36 @@
 
 ### Backend
 
-- FastAPI (`app/main.py`): `/health`, `/db-health`, CORS za `localhost:5173`
-- Rute: `/seasons`, `/teams`, `/matches`, `/players`, `/match-events`
-- Bez baze: mock; uz `DATABASE_URL`: čitanje iz PostgreSQL-a
-- Testovi u `backend\tests\` — `pytest` iz foldera `backend`
+- FastAPI (`app/main.py`): `/health`, `/db-health`, CORS za `localhost:5173` i `127.0.0.1:5173`
+- Rute (između ostalog): `/seasons`, `/teams`, `/matches`, `/players`, `/match-events`, `/standings`, **`/rules`**, **`/schedule`** (uređivanje kola u mock/DB načinu), `/referees`, `/match-referees`
+- Bez baze: mock (`app/mock_data.py`, uključujući **dvije sezone**); uz `DATABASE_URL`: čitanje/pisanje gdje je implementirano
+- `backend\scripts\apply_seed.py` — punjenje Postgresa iz `Premier Liga\sql\seed_minimal.sql`
+- `backend\scripts\gen_mock_premijer.py` — regeneracija `mock_data.py`
+- Testovi: `backend\tests\` (`pytest`)
 
-### Frontend (fetch · usklađeno s postojećim backend GET-om)
+### Frontend
 
 - `frontend\.env.example` — `VITE_API_BASE_URL=http://127.0.0.1:8000`
-- `frontend\src\config.ts` — `API_BASE_URL`
-- `frontend\src\api\client.ts` — `apiGet`
-- Moduli: `health`, `seasons`, `matches`, `teams`, `players`, `match-events`
-- `App.tsx` + **React Router**: `/` pregled, `/timovi`, `/utakmice`, `/igraci`, `/dogadjaji`; zajednički podaci u `LigaDataProvider` (`src/context/LigaDataContext.tsx`), layout `src/layouts/MainLayout.tsx` (sezona + navigacija)
+- API moduli i stranice: pregled, **pravila**, **tablica**, **raspored**, utakmice, **uporedi**, klubovi (+ detalj), igrači (+ detalj), događaji; `LigaDataProvider` (izbor sezone, osvježavanje)
+- Brzo pokretanje: korijenski **`POKRETANJE.md`** i folder **`dev\`**
 
 ---
 
 ## Kad budete spremni za pokretanje
 
+**Brzi put (Windows, preporučeno):** iz korijena repozitorija jednokratno `powershell -ExecutionPolicy Bypass -File .\dev\setup.ps1`, zatim u dva terminala `.\dev\backend-mock.ps1` (mock API, bez baze) i `.\dev\frontend.ps1`. Detalji, testovi i „ne vidim drugu sezonu“: **`POKRETANJE.md`**.
+
 **Prije prvog pokretanja (jednom po mašini):**
 
 1. U `frontend`: `npm install` (ako nisi već).
 2. **`backend\.env`** — ako želiš podatke iz PostgreSQLa, postavi `DATABASE_URL` (primjer u `backend\.env.example`). Bez toga backend može raditi s mock podacima.
-3. **`frontend\.env`** — kopiraj iz `frontend\.env.example` (obično `VITE_API_BASE_URL=http://127.0.0.1:8000`).
+3. U bazi koji koristi **`DATABASE_URL`**, pokreni **šeme** iz `Premier Liga\sql\` (DDL fajlove), zatim **demo podatke**:
+   ```powershell
+   cd "C:\Users\WIN_10\Desktop\BiH Premier Liga\backend"
+   python scripts\apply_seed.py
+   ```
+   (`apply_seed.py` čita isti `.env`, puni bazu iz `Premier Liga\sql\seed_minimal.sql` — **10 klubova**, mečevi, igrači, događaji. Ponovo pokreni kad zamijeniš seed u repozitoriju.)
+4. **`frontend\.env`** — kopiraj iz `frontend\.env.example` (obično `VITE_API_BASE_URL=http://127.0.0.1:8000`).
 
 **Redoslijed svaki put kad radiš:**
 
@@ -102,11 +110,10 @@ Otvori link koji Vite ispiše (npr. http://localhost:5173).
 
 | Prioritet | Šta |
 |-----------|-----|
-| 1 | ~~**React Router** — rastaviti `App.tsx` na stranice~~ → **URAĐENO** (`/`, `/timovi`, `/utakmice`, `/igraci`, `/dogadjaji`) |
-| 2 | **Tablica bodova** — prvo odluka: računanje na frontu iz utakmica **ili** kasnije nova ruta na backendu kad ga budeš nadograđivao |
-| 3 | **GitHub:** commit samo `frontend/` kad frontend bude kako želiš |
+| 1 | **GitHub:** commit/push po dogovoru (npr. samo `frontend/` ili cijeli monorepo) |
+| 2 | Dalja proširenja API-ja ili UI-a — posebni zadaci |
 
-Nove backend rute radimo tek kad kreneš **nadogradnju backenda** (poseban korak, ne miješati s ovim pravilom).
+Nove backend rute radimo tek kad kreneš **nadogradnju backenda** (poseban korak, ne miješati s pravilom iz uvoda ako i dalje vrijedi).
 
 ---
 
@@ -118,7 +125,6 @@ Nove backend rute radimo tek kad kreneš **nadogradnju backenda** (poseban korak
 
 ## Sljedeći savjetni korak
 
-1. Kad hoćeš raditi: koristi sekciju **„Kad budete spremni za pokretanje“** gore.  
-2. Dalje u projektu: **tablica bodova** (na frontu ili kasnije s backendom).  
-3. Kad frontend zadovolji: **push samo `frontend/`** na GitHub (backend po dogovoru).
+1. Za svakodnevni rad: **`POKRETANJE.md`** i sekcija **„Kad budete spremni za pokretanje“** gore.  
+2. Kad frontend ili backend zadovolji: **commit/push** po tvom workflowu.
 

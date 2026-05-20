@@ -1,4 +1,4 @@
--- PostgreSQL: tablica seasons (Premijer liga BiH — učenje)
+-- PostgreSQL: tablica seasons — demo / učenje
 
 CREATE TABLE seasons (
     id BIGSERIAL PRIMARY KEY,

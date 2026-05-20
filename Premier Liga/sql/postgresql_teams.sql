@@ -1,4 +1,4 @@
--- PostgreSQL: tablica teams (Premijer liga BiH — učenje)
+-- PostgreSQL: tablica teams — demo / učenje
 
 CREATE TABLE teams (
     id BIGSERIAL PRIMARY KEY,

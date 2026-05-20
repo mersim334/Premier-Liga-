@@ -1,5 +1,9 @@
--- PostgreSQL: tablica matches (Premijer liga BiH — učenje)
+-- PostgreSQL: tablica matches — demo / učenje (fiktivni podaci u seed_minimal.sql)
 -- Pokretanje: nakon postgresql_seasons.sql i postgresql_teams.sql
+--
+-- Pravilnik: utakmica ima tačno dva tima (domaćin + gost) i regularno traje 90 minuta
+-- (dva poluvremena od po 45 min). Rezultat u kolonama home_goals/away_goals = nakon
+-- regularnog vremena (ne uključuje eventualni produžetak / penale u ovom modelu).
 
 CREATE TABLE matches (
     id BIGSERIAL PRIMARY KEY,
@@ -24,6 +28,7 @@ CREATE TABLE matches (
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Uvijek tačno dva kluba: domaćin i gost (isti tim nije dozvoljen).
     CONSTRAINT chk_matches_teams_distinct CHECK (home_team_id <> away_team_id),
     CONSTRAINT chk_matches_finished_scores CHECK (
         status <> 'finished'
@@ -31,6 +36,10 @@ CREATE TABLE matches (
             home_goals IS NOT NULL
             AND away_goals IS NOT NULL
         )
+    ),
+    CONSTRAINT chk_matches_goals_non_negative CHECK (
+        (home_goals IS NULL OR home_goals >= 0)
+        AND (away_goals IS NULL OR away_goals >= 0)
     )
 );
 

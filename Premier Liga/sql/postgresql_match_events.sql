@@ -1,4 +1,4 @@
--- PostgreSQL: tablica match_events — događaji na utakmici (Premijer liga BiH — učenje)
+-- PostgreSQL: match_events — demo / učenje
 -- Pokretanje (redoslijed): seasons → teams → matches → players → ovaj fajl
 
 --
@@ -9,13 +9,18 @@
 --   penalty_missed                   → player_id = izvođač
 --
 -- CHECK lista za event_type je stroga; trigger ispod forsira da je team_id domaćin ili gost na tom meču.
+-- Regularno vrijeme: minute 1–90 (dva poluvremena × 45 min). Nadoknada: minute_added 0–15
+-- (npr. 45+2 → minute=45, minute_added=2).
 
 CREATE TABLE match_events (
     id BIGSERIAL PRIMARY KEY,
     match_id BIGINT NOT NULL REFERENCES matches (id) ON DELETE CASCADE,
     team_id BIGINT NOT NULL REFERENCES teams (id) ON DELETE RESTRICT,
-    minute SMALLINT NOT NULL CHECK (minute >= 0 AND minute <= 130),
-    minute_added SMALLINT CHECK (minute_added IS NULL OR minute_added >= 0),
+    minute SMALLINT NOT NULL CHECK (minute >= 1 AND minute <= 90),
+    minute_added SMALLINT CHECK (
+        minute_added IS NULL
+        OR (minute_added >= 0 AND minute_added <= 15)
+    ),
     event_type TEXT NOT NULL CHECK (
         event_type IN (
             'goal',

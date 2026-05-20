@@ -1,10 +1,38 @@
 # Lokalni secrets i okolina — ne ulaze u Git
 backend/.env
+frontend/.env
 .env
 .env.local
+.env.*.local
 
 # Python / alati
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
+venv/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# Slučajni lokalni izlazi (npr. redirect sa generatora)
+backend/_out*.txt
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+node_modules/
+dist/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE (opciono lokalno)
+.idea/
+.vscode/*
+!.vscode/extensions.json

@@ -19,73 +19,99 @@ export function MainLayout() {
 
   return (
     <div className="app">
-      <header className="main-header">
-        <div className="header-title">
-          <h1>BiH Premier Liga</h1>
-          <p className="tagline">
-            Frontend prema postojećem API-ju · bez izmjena backenda
+      <header className="site-topbar">
+        <div className="brand-line">
+          <h1>Premier liga — demo</h1>
+          <p className="brand-meta">
+            Fiktivni klubovi i igrači · podaci samo za vježbu aplikacije
           </p>
         </div>
-        <nav className="main-nav" aria-label="Glavna navigacija">
-          <NavLink to="/" end className={navCls}>
-            Pregled
-          </NavLink>
-          <NavLink to="/timovi" className={navCls}>
-            Timovi
-          </NavLink>
-          <NavLink to="/utakmice" className={navCls}>
-            Utakmice
-          </NavLink>
-          <NavLink to="/igraci" className={navCls}>
-            Igrači
-          </NavLink>
-          <NavLink to="/dogadjaji" className={navCls}>
-            Događaji
-          </NavLink>
-        </nav>
       </header>
 
-      <section className="api-hint" aria-label="Backend URL">
-        <span>Backend URL:</span>
-        <code>{API_BASE_URL}</code>
-      </section>
+      <nav className="main-nav" aria-label="Glavna navigacija">
+        <NavLink to="/" end className={navCls}>
+          Početak
+        </NavLink>
+        <NavLink to="/pravila" className={navCls}>
+          Pravila
+        </NavLink>
+        <NavLink to="/tablica" className={navCls}>
+          Tablica
+        </NavLink>
+        <NavLink to="/raspored" className={navCls}>
+          Raspored
+        </NavLink>
+        <NavLink to="/utakmice" className={navCls}>
+          Utakmice
+        </NavLink>
+        <NavLink to="/uporedi" className={navCls}>
+          Uporedi
+        </NavLink>
+        <NavLink to="/timovi" className={navCls}>
+          Klubovi
+        </NavLink>
+        <NavLink to="/igraci" className={navCls}>
+          Igrači
+        </NavLink>
+        <NavLink to="/dogadjaji" className={navCls}>
+          Detalji
+        </NavLink>
+      </nav>
 
-      <section className="status-block" aria-live="polite">
-        {loading && <p className="muted">Učitavanje…</p>}
-        {!loading && error && (
-          <p className="error" role="alert">
-            {error}{' '}
-            <span className="muted">
-              (Je li pokrenut backend: <code>uvicorn app.main:app</code>?)
-            </span>
-          </p>
-        )}
-        {!loading && !error && health && (
-          <p>
-            Odgovor <code>/health</code>: <strong>{health}</strong>
-          </p>
-        )}
-      </section>
+      {!loading && error && (
+        <div className="error error-banner" role="alert">
+          {error}{' '}
+          <span className="muted">
+            (probaj pokrenuti <code>uvicorn app.main:app</code> iz{' '}
+            <code>backend</code>?)
+          </span>
+        </div>
+      )}
 
       {!loading && !error && seasons.length > 0 && (
-        <section className="season-picker" aria-label="Odabir sezone">
-          <label htmlFor="season-select">Sezona</label>
-          <select
-            id="season-select"
-            value={selectedSeasonId ?? ''}
-            onChange={onSeasonChange}
-            disabled={detailLoading}
-          >
-            {seasons.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-                {s.is_current ? ' (aktuelna)' : ''}
-              </option>
-            ))}
-          </select>
+        <div className="toolbar-bar">
+          <div className="season-picker">
+            <label htmlFor="season-select">Sezona</label>
+            <select
+              id="season-select"
+              value={selectedSeasonId ?? ''}
+              onChange={onSeasonChange}
+              disabled={detailLoading}
+            >
+              {seasons.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                  {s.is_current ? ' (akt.)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
           {detailLoading && (
-            <span className="muted inline-hint">Osvježavanje…</span>
+            <span className="inline-hint">Osvježavanje…</span>
           )}
+        </div>
+      )}
+
+      <details className="dev-accordion">
+        <summary>Tehnički detalji (API za developere)</summary>
+        <div className="dev-accordion-inner">
+          <span>Adresa koju front koristi u razvoju:</span>
+          <code>{API_BASE_URL}</code>
+
+          <div className="status-block" aria-live="polite">
+            {loading && <p className="muted">Priprema…</p>}
+            {!loading && !error && health && (
+              <p className="status-inline">
+                Backend servis: <code>{health}</code>
+              </p>
+            )}
+          </div>
+        </div>
+      </details>
+
+      {!loading && !error && health && seasons.length === 0 && (
+        <section className="toolbar-bar muted">
+          Nije učitan kalendar sezona.
         </section>
       )}
 
